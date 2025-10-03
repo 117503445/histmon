@@ -2,7 +2,11 @@ module github.com/117503445/histmon
 
 go 1.25.1
 
-require github.com/117503445/goutils v0.0.0-20250824044823-d1d255ec734f
+require (
+	github.com/117503445/goutils v0.0.0-20250824044823-d1d255ec734f
+	github.com/alecthomas/kong v1.12.1
+	github.com/rs/zerolog v1.33.0
+)
 
 require (
 	github.com/goccy/go-yaml v1.15.23 // indirect
@@ -10,6 +14,5 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
-	github.com/rs/zerolog v1.33.0 // indirect
 	golang.org/x/sys v0.27.0 // indirect
 )
