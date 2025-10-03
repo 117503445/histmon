@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/117503445/goutils"
 	"github.com/alecthomas/kong"
@@ -35,7 +36,19 @@ func main() {
 	}
 
 	content := fmt.Sprintf(`# 命令执行完成
-- hostname: %s`, hostname)
+- **主机名**: %s
+- **命令**: %s
+- **退出状态码**: %d
+- **开始时间**: %s
+- **结束时间**: %s
+- **执行时长**: %s`,
+		hostname,
+		cli.Command,
+		cli.ExitStatus,
+		time.UnixMilli(int64(cli.StartAt)).Format("2006-01-02 15:04:05"),
+		time.UnixMilli(int64(cli.EndAt)).Format("2006-01-02 15:04:05"),
+		goutils.DurationToStr(time.Duration(cli.EndAt-cli.StartAt)*time.Millisecond),
+	)
 
 	{
 		payload := map[string]any{
