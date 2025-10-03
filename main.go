@@ -29,6 +29,11 @@ func main() {
 
 	kong.Parse(&cli)
 	log.Info().Interface("cli", cli).Msg("Starting histmon")
+	// 如果执行时间小于 5 秒，则不发送消息
+	if cli.EndAt-cli.StartAt < 5000 {
+		log.Info().Msg("Command execution time is less than 5 second, no message will be sent")
+		return
+	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
