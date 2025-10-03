@@ -49,10 +49,7 @@ func main() {
 		log.Panic().Err(err).Msg("Failed to get hostname")
 	}
 
-	output := cli.Output
-	if len(output) > 1000 {
-		output = output[:1000] + "..."
-	}
+
 
 	content := fmt.Sprintf(`# 命令执行完成
 - **主机名**: %s
@@ -60,15 +57,13 @@ func main() {
 - **退出状态码**: %d
 - **开始时间**: %s
 - **结束时间**: %s
-- **执行时长**: %s
-- **输出**: %s`,
+- **执行时长**: %s`,
 		hostname,
 		cli.Command,
 		cli.ExitStatus,
 		time.UnixMilli(int64(cli.StartAt)).Format("2006-01-02 15:04:05"),
 		time.UnixMilli(int64(cli.EndAt)).Format("2006-01-02 15:04:05"),
 		goutils.DurationToStr(time.Duration(cli.EndAt-cli.StartAt)*time.Millisecond),
-		output,
 	)
 
 	{
