@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+  default:
+    desc: "The default task" 
+    # deps: [deploy]
+    cmds:
+      - clear
+      - task: run
+      
+  run:
+    deps:
+      - build
+    cmds:
+      - ./scripts/run.sh
+

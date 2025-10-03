@@ -1,0 +1,11 @@
+services:
+  dev:
+    build:
+      dockerfile: dev.Dockerfile
+    volumes:
+        - ./:/workspace
+        - lingma:/root/.lingma
+        - cache:/root/.cache
+volumes:
+  lingma:
+  cache:
