@@ -24,6 +24,15 @@ var cli struct {
 	Endpoint string `env:"ENDPOINT"`
 }
 
+func init() {
+	// 设置全局时区为 UTC+8
+	loc, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		loc = time.FixedZone("UTC+8", 8*60*60)
+	}
+	time.Local = loc
+}
+
 func main() {
 	goutils.InitZeroLog()
 
@@ -40,19 +49,26 @@ func main() {
 		log.Panic().Err(err).Msg("Failed to get hostname")
 	}
 
+	output := cli.Output
+	if len(output) > 1000 {
+		output = output[:1000] + "..."
+	}
+
 	content := fmt.Sprintf(`# 命令执行完成
 - **主机名**: %s
 - **命令**: %s
 - **退出状态码**: %d
 - **开始时间**: %s
 - **结束时间**: %s
-- **执行时长**: %s`,
+- **执行时长**: %s
+- **输出**: %s`,
 		hostname,
 		cli.Command,
 		cli.ExitStatus,
 		time.UnixMilli(int64(cli.StartAt)).Format("2006-01-02 15:04:05"),
 		time.UnixMilli(int64(cli.EndAt)).Format("2006-01-02 15:04:05"),
 		goutils.DurationToStr(time.Duration(cli.EndAt-cli.StartAt)*time.Millisecond),
+		output,
 	)
 
 	{
