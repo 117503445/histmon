@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
+	"text/template"
 	"time"
 
 	"github.com/117503445/goutils"
@@ -65,40 +67,79 @@ func install() {
 		log.Panic().Err(err).Msg("Failed to read .zshrc")
 	}
 
-	// 如果 不存在 source ~/.zsh/histmon.zsh 这一行，就添加进 .zshrc
+	// 如果不存在 source ~/.zsh/histmon.zsh 这一行，就添加进 .zshrc
+	sourceLine := "source ~/.zsh/histmon.zsh"
+	if !strings.Contains(text, sourceLine) {
+		text += "\n" + sourceLine + "\n"
+		err = goutils.WriteText(fileZshrc, text)
+		if err != nil {
+			log.Panic().Err(err).Msg("Failed to write .zshrc")
+		}
+	}
 
-	// 写入 source ~/.zsh/histmon.zsh
+	// 创建 .zsh 目录
+	zshDir := path.Join(home, ".zsh")
+	err = os.MkdirAll(zshDir, 0755)
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to create .zsh directory")
+	}
 
-// autoload -Uz add-zsh-hook
+	// 使用 text/template 来处理 histmon.zsh 文件模板
+	histmonScriptTemplate := `autoload -Uz add-zsh-hook
 
-// typeset -g zsh_command_start_time
-// typeset -g zsh_current_command
+typeset -g zsh_command_start_time
+typeset -g zsh_current_command
 
-// preexec() {
-//     zsh_command_start_time=$(date +%s%3N)  # 毫秒时间戳
-//     zsh_current_command=$1
-// }
+preexec() {
+    zsh_command_start_time=$(date +%s%3N)  # 毫秒时间戳
+    zsh_current_command=$1
+}
 
-// precmd() {
-//     local exit_status=$?
-//     local end_time=$(date +%s%3N)  # 毫秒时间戳
+precmd() {
+    local exit_status=$?
+    local end_time=$(date +%s%3N)  # 毫秒时间戳
     
-//     if [[ -n "$zsh_command_start_time" && -n "$zsh_current_command" ]]; then
-//         # 调用 histmon，重定向所有输出到 /dev/null
-//         (COMMAND="$zsh_current_command" \
-//         START_AT="$zsh_command_start_time" \
-//         END_AT="$end_time" \
-//         EXIT_STATUS="$exit_status" \
-//         TOKEN="%s" \
-//         ENDPOINT="%s" \
-//         histmon >/dev/null 2>&1 &)
+    if [[ -n "$zsh_command_start_time" && -n "$zsh_current_command" ]]; then
+        # 调用 histmon，重定向所有输出到 /dev/null
+        (COMMAND="$zsh_current_command" \
+        START_AT="$zsh_command_start_time" \
+        END_AT="$end_time" \
+        EXIT_STATUS="$exit_status" \
+        TOKEN="{{.Token}}" \
+        ENDPOINT="{{.Endpoint}}" \
+        histmon >/dev/null 2>&1 &)
         
-//         # 清理变量
-//         unset zsh_command_start_time
-//         unset zsh_current_command
-//     fi
-// }
+        # 清理变量
+        unset zsh_command_start_time
+        unset zsh_current_command
+    fi
+}
+`
 
+	tmpl, err := template.New("histmon").Parse(histmonScriptTemplate)
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to parse histmon script template")
+	}
+
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, struct {
+		Token    string
+		Endpoint string
+	}{
+		Token:    cli.Token,
+		Endpoint: cli.Endpoint,
+	})
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to execute histmon script template")
+	}
+
+	histmonFile := path.Join(zshDir, "histmon.zsh")
+	err = goutils.WriteText(histmonFile, buf.String())
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to write histmon.zsh")
+	}
+
+	log.Info().Msg("Successfully installed histmon to your shell")
 }
 
 func send() {
