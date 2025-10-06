@@ -22,6 +22,11 @@ var cli struct {
 
 	Token    string `env:"TOKEN"`
 	Endpoint string `env:"ENDPOINT"`
+
+	Install struct {
+	} `cmd:"" help:"Install to shell"`
+	Send struct {
+	} `cmd:"" help:"Send message" default:"1"`
 }
 
 func init() {
@@ -33,11 +38,11 @@ func init() {
 	time.Local = loc
 }
 
-func main() {
-	goutils.InitZeroLog()
+func install() {
+	
+}
 
-	kong.Parse(&cli)
-	log.Info().Interface("cli", cli).Msg("Starting histmon")
+func send() {
 	// 如果执行时间小于 5 秒，则不发送消息
 	if cli.EndAt-cli.StartAt < 5000 {
 		log.Info().Msg("Command execution time is less than 5 second, no message will be sent")
@@ -48,8 +53,6 @@ func main() {
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to get hostname")
 	}
-
-
 
 	content := fmt.Sprintf(`# 命令执行完成
 - **主机名**: %s
@@ -93,6 +96,21 @@ func main() {
 			return
 		}
 		defer resp.Body.Close()
+	}
+}
+
+func main() {
+	goutils.InitZeroLog()
+
+	ctx := kong.Parse(&cli)
+
+	log.Info().Interface("cli", cli).Msg("Starting histmon")
+	switch ctx.Command() {
+	case "install":
+	case "send":
+		send()
+	default:
+		panic(ctx.Command())
 	}
 
 }
