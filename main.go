@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path"
 	"time"
 
 	"github.com/117503445/goutils"
@@ -39,7 +40,65 @@ func init() {
 }
 
 func install() {
-	
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to get home directory")
+	}
+
+	fileZshrc := path.Join(home, ".zshrc")
+	if !goutils.FileExists(fileZshrc) {
+		log.Panic().
+			Str("file", fileZshrc).
+			Msg("File .zshrc not found")
+	}
+
+	if cli.Endpoint == "" {
+		log.Panic().Msg("Please set ENDPOINT environment variable")
+	}
+
+	if cli.Token == "" {
+		log.Panic().Msg("Please set TOKEN environment variable")
+	}
+
+	text, err := goutils.ReadText(fileZshrc)
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed to read .zshrc")
+	}
+
+	// 如果 不存在 source ~/.zsh/histmon.zsh 这一行，就添加进 .zshrc
+
+	// 写入 source ~/.zsh/histmon.zsh
+
+// autoload -Uz add-zsh-hook
+
+// typeset -g zsh_command_start_time
+// typeset -g zsh_current_command
+
+// preexec() {
+//     zsh_command_start_time=$(date +%s%3N)  # 毫秒时间戳
+//     zsh_current_command=$1
+// }
+
+// precmd() {
+//     local exit_status=$?
+//     local end_time=$(date +%s%3N)  # 毫秒时间戳
+    
+//     if [[ -n "$zsh_command_start_time" && -n "$zsh_current_command" ]]; then
+//         # 调用 histmon，重定向所有输出到 /dev/null
+//         (COMMAND="$zsh_current_command" \
+//         START_AT="$zsh_command_start_time" \
+//         END_AT="$end_time" \
+//         EXIT_STATUS="$exit_status" \
+//         TOKEN="%s" \
+//         ENDPOINT="%s" \
+//         histmon >/dev/null 2>&1 &)
+        
+//         # 清理变量
+//         unset zsh_command_start_time
+//         unset zsh_current_command
+//     fi
+// }
+
 }
 
 func send() {
@@ -107,6 +166,7 @@ func main() {
 	log.Info().Interface("cli", cli).Msg("Starting histmon")
 	switch ctx.Command() {
 	case "install":
+		install()
 	case "send":
 		send()
 	default:
