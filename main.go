@@ -23,8 +23,8 @@ var cli struct {
 	EndAt      int    `env:"END_AT"`   // 毫秒时间戳
 	ExitStatus int    `env:"EXIT_STATUS"`
 
-	Token    string `env:"TOKEN"`
-	Endpoint string `env:"ENDPOINT"`
+	Token    string `env:"TOKEN,HISTMON_TOKEN"`
+	Endpoint string `env:"ENDPOINT,HISTMON_ENDPOINT"`
 
 	Install struct {
 	} `cmd:"" help:"Install to shell"`
